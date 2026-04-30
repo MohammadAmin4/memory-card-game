@@ -1,0 +1,113 @@
+* {
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    background: linear-gradient(145deg, #1e2a5e, #1b2b4e);
+    font-family: 'Vazir', Tahoma, 'Segoe UI', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    padding: 15px;
+}
+
+.game-panel {
+    background: #fef9e8;
+    border-radius: 50px;
+    padding: 25px 20px 30px 20px;
+    width: 550px;
+    max-width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.4);
+}
+
+h1 {
+    color: #2c3e66;
+    font-size: 28px;
+    margin: 0 0 10px 0;
+}
+
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    background: #e7decd;
+    padding: 10px 25px;
+    border-radius: 60px;
+    margin: 15px 0 20px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    justify-items: center;
+    margin-bottom: 25px;
+}
+
+.card {
+    background: #ffcf9a;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.8rem;
+    cursor: pointer;
+    box-shadow: 0 10px 0 #b97f3b;
+    transition: 0.1s linear;
+    transform: scale(1);
+}
+
+.card:active {
+    transform: scale(0.96);
+    box-shadow: 0 3px 0 #b97f3b;
+}
+
+.card.flipped, .card.matched {
+    background: #c7e0ff;
+    box-shadow: 0 5px 0 #7f9bc0;
+    cursor: default;
+}
+
+.card.matched {
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: 0.2s;
+}
+
+button {
+    background: #2c5f8a;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    font-family: inherit;
+    padding: 10px 25px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 5px 0 #123c57;
+    transition: 0.08s linear;
+}
+
+button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #123c57;
+}
+
+#message {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #1f5e3a;
+    background: #e2f0e4;
+    display: inline-block;
+    padding: 6px 20px;
+    border-radius: 30px;
+}
