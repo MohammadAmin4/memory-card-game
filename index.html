@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 بازی حافظه | جفت کارت‌ها</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1e2a5e, #1b2b4e);
+            font-family: 'Vazir', Tahoma, 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .game-panel {
+            background: #fef9e8;
+            border-radius: 50px;
+            padding: 25px 20px 30px 20px;
+            width: 550px;
+            max-width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            color: #2c3e66;
+            font-size: 28px;
+            margin: 0 0 10px 0;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            background: #e7decd;
+            padding: 10px 25px;
+            border-radius: 60px;
+            margin: 15px 0 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            justify-items: center;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: #ffcf9a;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            cursor: pointer;
+            box-shadow: 0 10px 0 #b97f3b;
+            transition: 0.1s linear;
+            transform: scale(1);
+        }
+
+        .card:active {
+            transform: scale(0.96);
+            box-shadow: 0 3px 0 #b97f3b;
+        }
+
+        .card.flipped, .card.matched {
+            background: #c7e0ff;
+            box-shadow: 0 5px 0 #7f9bc0;
+            cursor: default;
+        }
+
+        .card.matched {
+            visibility: hidden;
+            pointer-events: none;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: 0.2s;
+        }
+
+        button {
+            background: #2c5f8a;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            font-family: inherit;
+            padding: 10px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 5px 0 #123c57;
+            transition: 0.08s linear;
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #123c57;
+        }
+
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #1f5e3a;
+            background: #e2f0e4;
+            display: inline-block;
+            padding: 6px 20px;
+            border-radius: 30px;
+        }
+    </style>
+</head>
+<body>
+<div class="game-panel">
+    <h1>🧠 بازی حافظه | جفت‌یابی</h1>
+    <div class="status-bar">
+        <span>⭐ امتیاز: <span id="score">0</span></span>
+        <span>🎯 جفت‌ها: <span id="pairsMatched">0</span> / 8</span>
+        <span>🔄 تلاش: <span id="attempts">0</span></span>
+    </div>
+    <div class="card-grid" id="cardGrid"></div>
+    <button id="resetGameBtn">🔄 بازی جدید</button>
+    <div id="message">✨ یه کارت رو برگردون ✨</div>
+</div>
+
+<script>
+    const icons = [
+        "🐶", "🐱", "🐭", "🐹",
+        "🐰", "🦊", "🐻", "🐼"
+    ];
+    let cards = [];
+    let flippedCards = [];
+    let lockBoard = false;
+    let attempts = 0;
+    let matchedPairs = 0;
+    let score = 0;
+
+    const scoreEl = document.getElementById("score");
+    const pairsEl = document.getElementById("pairsMatched");
+    const attemptsEl = document.getElementById("attempts");
+    const messageEl = document.getElementById("message");
+    const gridEl = document.getElementById("cardGrid");
+
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function initGame() {
+        let deck = [...icons, ...icons];
+        deck = shuffleArray(deck);
+        cards = deck.map((icon, idx) => ({
+            id: idx,
+            icon: icon,
+            flipped: false,
+            matched: false
+        }));
+        flippedCards = [];
+        lockBoard = false;
+        attempts = 0;
+        matchedPairs = 0;
+        updateScoreUI();
+        updateStatsUI();
+        messageEl.innerHTML = "✨ یه کارت رو برگردون ✨";
+        renderBoard();
+    }
+
+    function updateScoreUI() {
+        // فرمول امتیاز: هر جفت 10 امتیاز + کم کردن تلاش اضافه
+        let calculatedScore = (matchedPairs * 10) - (attempts - matchedPairs);
+        if (calculatedScore < 0) calculatedScore = 0;
+        score = calculatedScore;
+        scoreEl.innerText = score;
+    }
+
+    function updateStatsUI() {
+        attemptsEl.innerText = attempts;
+        pairsEl.innerText = `${matchedPairs} / 8`;
+    }
+
+    function renderBoard() {
+        gridEl.innerHTML = "";
+        cards.forEach(card => {
+            const cardDiv = document.createElement("div");
+            cardDiv.classList.add("card");
+            if (card.flipped || card.matched) {
+                cardDiv.classList.add("flipped");
+                cardDiv.innerText = card.icon;
+            } else {
+                cardDiv.innerText = "?";
+            }
+            if (card.matched) {
+                cardDiv.classList.add("matched");
+            }
+            cardDiv.addEventListener("click", () => onCardClick(card.id));
+            gridEl.appendChild(cardDiv);
+        });
+    }
+
+    function onCardClick(id) {
+        if (lockBoard) return;
+        const card = cards[id];
+        if (card.matched) return;
+        if (card.flipped) return;
+        if (flippedCards.length === 2) return;
+
+        card.flipped = true;
+        flippedCards.push(card);
+        renderBoard();
+
+        if (flippedCards.length === 2) {
+            attempts++;
+            updateStatsUI();
+            checkMatch();
+        }
+    }
+
+    function checkMatch() {
+        const [cardA, cardB] = flippedCards;
+        if (cardA.icon === cardB.icon) {
+            // جفت درست
+            cardA.matched = true;
+            cardB.matched = true;
+            matchedPairs++;
+            updateStatsUI();
+            updateScoreUI();
+
+            flippedCards = [];
+            renderBoard();
+
+            if (matchedPairs === 8) {
+                messageEl.innerHTML = "🎉🎉 برنده شدی! عالی بود 🎉🎉";
+                lockBoard = true;
+            } else {
+                messageEl.innerHTML = "✅ درست! جفت پیدا شد ✅";
+            }
+        } else {
+            // جفت اشتباه
+            messageEl.innerHTML = "❌ اشتباه، دقت کن ❌";
+            lockBoard = true;
+            setTimeout(() => {
+                cardA.flipped = false;
+                cardB.flipped = false;
+                flippedCards = [];
+                lockBoard = false;
+                renderBoard();
+                messageEl.innerHTML = "✨ ادامه بده، می‌تونی ✨";
+                updateScoreUI();
+            }, 800);
+        }
+    }
+
+    function resetGame() {
+        initGame();
+    }
+
+    document.getElementById("resetGameBtn").addEventListener("click", resetGame);
+    initGame();
+</script>
+</body>
+  </html>
